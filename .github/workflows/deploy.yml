@@ -31,9 +31,17 @@ jobs:
         run: npm run build
 
       - name: 🚀 Trigger Coolify Auto-Deploy Webhook
+        env:
+          COOLIFY_URL: ${{ secrets.COOLIFY_WEBHOOK_URL }}
         run: |
+          if [ -z "$COOLIFY_URL" ]; then
+            echo "⚠️ COOLIFY_WEBHOOK_URL secret is not configured yet in GitHub Repository Secrets."
+            echo "✅ Build & Prisma checks succeeded! Add COOLIFY_WEBHOOK_URL under Repo Settings -> Secrets -> Actions to trigger auto-deployments."
+            exit 0
+          fi
+
           echo "Triggering Coolify deployment for backend..."
-          RESPONSE=$(curl -s -w "\n%{http_code}" -X GET "${{ secrets.COOLIFY_WEBHOOK_URL }}")
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X GET "$COOLIFY_URL")
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
           BODY=$(echo "$RESPONSE" | sed '$d')
 
