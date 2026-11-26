@@ -1,0 +1,215 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoomType {
+  DELUXE_AC
+  SUPER_DELUXE_AC
+  NORMAL_NON_AC
+  STANDARD_NON_AC
+  SINGLE
+  DORMITORY
+  DELUXE
+}
+
+enum SharingType {
+  SINGLE
+  DOUBLE
+  TRIPLE
+  FOUR_SHARING
+  SIX_SHARING
+  EIGHT_SHARING
+}
+
+enum RoomStatus {
+  AVAILABLE
+  FULL
+  UNDER_MAINTENANCE
+}
+
+enum AdmissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  ADMITTED
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum ServiceType {
+  ROOM_CLEANING
+  DEEP_CLEANING
+  LAUNDRY
+  PLUMBING
+  ELECTRICAL
+  AC_MAINTENANCE
+  PEST_CONTROL
+}
+
+enum UrgencyLevel {
+  NORMAL
+  HIGH
+  EMERGENCY
+}
+
+enum ServiceStatus {
+  REQUESTED
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentType {
+  ROOM_RENT
+  ADMISSION_FEE
+  SECURITY_DEPOSIT
+  SERVICE_CHARGE
+  MESS_FEE
+}
+
+enum PaymentStatus {
+  SUCCESS
+  PENDING
+  FAILED
+}
+
+model Hostel {
+  id              String        @id @default(uuid())
+  name            String
+  code            String        @unique
+  address         String
+  city            String        @default("Mumbai")
+  totalFloors     Int           @default(3)
+  description     String?
+  facilities      String[]      @default([])
+  images          String[]      @default([])
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  rooms           Room[]
+}
+
+model Room {
+  id              String        @id @default(uuid())
+  roomNumber      String        @unique
+  floor           Int
+  hostelId        String?
+  hostel          Hostel?       @relation(fields: [hostelId], references: [id], onDelete: Cascade)
+  type            RoomType
+  sharing         SharingType   @default(SINGLE)
+  capacity        Int
+  occupiedBeds    Int           @default(0)
+  priceMonthly    Float
+  securityDeposit Float
+  amenities       String[]
+  images          String[]
+  description     String
+  status          RoomStatus    @default(AVAILABLE)
+  positionX       Int           @default(0)
+  positionY       Int           @default(0)
+  wing            String        @default("East")
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  bookings        Booking[]
+  admissions      Admission[]
+}
+
+model Admission {
+  id                 String          @id @default(uuid())
+  fullName           String
+  email              String
+  phone              String
+  gender             String
+  dateOfBirth        String?
+  collegeOrWork      String?
+  guardianName       String
+  guardianPhone      String
+  address            String
+  idProofType        String
+  idProofNumber      String
+  roomTypePreference RoomType
+  foodPreference     String?
+  status             AdmissionStatus @default(PENDING)
+  assignedRoomId     String?
+  assignedRoom       Room?           @relation(fields: [assignedRoomId], references: [id])
+  notes              String?
+  admittedAt         DateTime?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+}
+
+model Booking {
+  id              String        @id @default(uuid())
+  bookingNumber   String        @unique
+  residentName    String
+  residentEmail   String
+  residentPhone   String
+  roomId          String
+  room            Room          @relation(fields: [roomId], references: [id])
+  checkInDate     DateTime
+  tenureMonths    Int           @default(1)
+  monthlyRent     Float
+  securityDeposit Float
+  totalAmount     Float
+  status          BookingStatus @default(CONFIRMED)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  payments        Payment[]
+}
+
+model ServiceRequest {
+  id              String        @id @default(uuid())
+  residentName    String
+  residentPhone   String
+  roomNumber      String
+  serviceType     ServiceType
+  preferredDate   DateTime
+  timeSlot        String
+  urgency         UrgencyLevel  @default(NORMAL)
+  instructions    String?
+  status          ServiceStatus @default(REQUESTED)
+  assignedStaff   String?
+  resolutionNotes String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model Payment {
+  id            String        @id @default(uuid())
+  transactionId String        @unique
+  invoiceNumber String        @unique
+  bookingId     String?
+  booking       Booking?      @relation(fields: [bookingId], references: [id])
+  payerName     String
+  payerEmail    String
+  amount        Float
+  paymentType   PaymentType
+  paymentMethod String
+  status        PaymentStatus @default(SUCCESS)
+  paidAt        DateTime      @default(now())
+  createdAt     DateTime      @default(now())
+}
+
+model Facility {
+  id          String   @id @default(uuid())
+  name        String
+  category    String
+  description String
+  icon        String
+  timing      String
+  isIncluded  Boolean  @default(true)
+  features    String[]
+  createdAt   DateTime @default(now())
+}

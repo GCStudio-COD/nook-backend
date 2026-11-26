@@ -1,0 +1,48 @@
+name: Deploy Backend to Coolify
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  validate-and-deploy:
+    name: Build Check & Trigger Coolify Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      - name: 💎 Generate Prisma Client
+        run: npx prisma generate
+
+      - name: 🏗️ Verify NestJS Build
+        run: npm run build
+
+      - name: 🚀 Trigger Coolify Auto-Deploy Webhook
+        run: |
+          echo "Triggering Coolify deployment for backend..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X GET "${{ secrets.COOLIFY_WEBHOOK_URL }}")
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "Response: $BODY"
+          echo "HTTP Status Code: $HTTP_CODE"
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            echo "✅ Successfully dispatched deployment to Coolify!"
+          else
+            echo "❌ Failed to trigger Coolify webhook (Status: $HTTP_CODE)"
+            exit 1
+          fi
