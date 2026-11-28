@@ -30,7 +30,7 @@ function renderSidebarHtml(activeRoute: string, isMobile = false): string {
           <i data-lucide="building-2" class="w-5 h-5 text-white"></i>
         </div>
         <div class="min-w-0">
-          <h1 class="text-sm font-extrabold text-slate-900 leading-tight tracking-tight truncate">Aura Hostels</h1>
+          <h1 class="text-sm font-extrabold text-slate-900 leading-tight tracking-tight truncate">Nook Living</h1>
           <p class="text-[11px] text-slate-400 font-medium leading-none mt-0.5 truncate">Admin Workspace</p>
         </div>
       </a>
@@ -115,7 +115,7 @@ export function renderAdminLayout(options: AdminLayoutOptions): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${pageTitle} | Aura Hostels ERP</title>
+  <title>${pageTitle} | Nook Living ERP</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">

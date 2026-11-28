@@ -1,56 +1,76 @@
-name: Deploy Backend to Coolify
+name: Deploy Backend to AWS EC2
 
 on:
   push:
     branches:
       - main
       - master
+  workflow_dispatch:
 
 jobs:
   validate-and-deploy:
-    name: Build Check & Trigger Coolify Deploy
+    name: Build Check & Deploy to EC2
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Checkout Repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: 🟢 Setup Node.js 20
+      - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
 
-      - name: 📦 Install Dependencies
+      - name: Install Dependencies
         run: npm ci
 
-      - name: 💎 Generate Prisma Client
+      - name: Generate Prisma Client
         run: npx prisma generate
 
-      - name: 🏗️ Verify NestJS Build
+      - name: Verify NestJS Build
         run: npm run build
 
-      - name: 🚀 Trigger Coolify Auto-Deploy Webhook
+      - name: Deploy to AWS EC2 via SSH
         env:
-          COOLIFY_URL: ${{ secrets.COOLIFY_WEBHOOK_URL }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
         run: |
-          if [ -z "$COOLIFY_URL" ]; then
-            echo "⚠️ COOLIFY_WEBHOOK_URL secret is not configured yet in GitHub Repository Secrets."
-            echo "✅ Build & Prisma checks succeeded! Add COOLIFY_WEBHOOK_URL under Repo Settings -> Secrets -> Actions to trigger auto-deployments."
+          if [ -z "$EC2_HOST" ] || [ -z "$EC2_SSH_KEY" ]; then
+            echo "⚠️ EC2_HOST or EC2_SSH_KEY secret is not configured yet in GitHub Repository Secrets."
+            echo "✅ Build & Prisma checks succeeded! Add EC2_HOST, EC2_USER, and EC2_SSH_KEY under Repo Settings -> Secrets -> Actions to enable EC2 auto-deploy."
             exit 0
           fi
 
-          echo "Triggering Coolify deployment for backend..."
-          RESPONSE=$(curl -s -w "\n%{http_code}" -X GET "$COOLIFY_URL")
-          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-          BODY=$(echo "$RESPONSE" | sed '$d')
+          SSH_USER="${EC2_USER:-ubuntu}"
+          mkdir -p ~/.ssh
+          printf '%s\n' "$EC2_SSH_KEY" | tr -d '\r' > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
 
-          echo "Response: $BODY"
-          echo "HTTP Status Code: $HTTP_CODE"
+          SSH_OPTS="-i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes"
 
-          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
-            echo "✅ Successfully dispatched deployment to Coolify!"
-          else
-            echo "❌ Failed to trigger Coolify webhook (Status: $HTTP_CODE)"
-            exit 1
-          fi
+          ssh $SSH_OPTS "${SSH_USER}@${EC2_HOST}" \
+            "mkdir -p ~/nook-backend && (command -v rsync >/dev/null || (sudo apt-get update -qq && sudo apt-get install -y -qq rsync))"
+
+          rsync -az --delete \
+            --exclude='.env' \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='dist' \
+            -e "ssh $SSH_OPTS" \
+            ./ "${SSH_USER}@${EC2_HOST}:~/nook-backend/"
+
+          ssh $SSH_OPTS "${SSH_USER}@${EC2_HOST}" 'bash -s' << 'EOF'
+            set -e
+            cd ~/nook-backend
+            npm ci
+            npx prisma generate
+            npx prisma db push
+            npm run build
+            pm2 restart nook-backend --update-env || pm2 start dist/main.js --name nook-backend
+            pm2 save
+          EOF
+
+          rm -f ~/.ssh/deploy_key

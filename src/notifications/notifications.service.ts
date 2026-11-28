@@ -13,7 +13,7 @@ export class NotificationsService {
   private customNotifications: AdminNotification[] = [
     {
       id: 'system-welcome',
-      title: 'Aura ERP System Online',
+      title: 'Nook Living ERP System Online',
       message: 'All campus microservices, database, and telemetry channels are synchronized.',
       category: 'SYSTEM',
       urgency: 'LOW',

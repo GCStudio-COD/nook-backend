@@ -451,7 +451,7 @@ export class RoomsService {
         data: {
           bookingNumber,
           residentName: studentName,
-          residentEmail: studentEmail || `${studentName.toLowerCase().replace(/[^a-z0-9]/g, '.')}@student.aura.edu`,
+          residentEmail: studentEmail || `${studentName.toLowerCase().replace(/[^a-z0-9]/g, '.')}@student.nooklivings.com`,
           residentPhone: studentPhone || '+91 98000 00000',
           roomId: room.id,
           checkInDate: data.checkInDate ? new Date(data.checkInDate) : new Date(),
@@ -485,7 +485,7 @@ export class RoomsService {
           invoiceNumber,
           bookingId: booking.id,
           payerName: studentName,
-          payerEmail: studentEmail || `${studentName.toLowerCase().replace(/[^a-z0-9]/g, '.')}@student.aura.edu`,
+          payerEmail: studentEmail || `${studentName.toLowerCase().replace(/[^a-z0-9]/g, '.')}@student.nooklivings.com`,
           amount: totalAmount,
           paymentType: PaymentType.ROOM_RENT,
           paymentMethod: data.paymentMethod || 'Direct Admin Intake',

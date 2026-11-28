@@ -168,7 +168,7 @@ export function getBillingViewHtml(): string {
 
         <!-- Modal Footer -->
         <div class="px-6 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 shrink-0">
-          <span>Digital GST Compliance Receipt • Verified by Aura Hostels Pro</span>
+          <span>Digital GST Compliance Receipt • Verified by Nook Living Pro</span>
           <button type="button" onclick="closeModal('invoice-modal')" class="px-4 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-100 cursor-pointer">
             Dismiss
           </button>
@@ -343,9 +343,9 @@ export function getBillingViewHtml(): string {
             <div>
               <div class="flex items-center gap-2 mb-1">
                 <div class="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-xs">
-                  AH
+                  NL
                 </div>
-                <h3 class="text-base font-extrabold text-slate-900 uppercase tracking-wide">AURA HOSTELS PRO</h3>
+                <h3 class="text-base font-extrabold text-slate-900 uppercase tracking-wide">NOOK LIVING PRO</h3>
               </div>
               <p class="text-xs text-slate-500 font-medium leading-relaxed">
                 Campus Student Housing &amp; Resident Services<br>
@@ -420,7 +420,7 @@ export function getBillingViewHtml(): string {
           <!-- Official Stamp & Notes -->
           <div class="pt-6 border-t border-slate-200 flex justify-between items-end">
             <div class="max-w-xs text-[10px] text-slate-400 leading-relaxed">
-              This is an authorized system-generated computer invoice issued by Aura Hostels Pro ERP. No physical signature is required. All security deposits are subject to hostel terms.
+              This is an authorized system-generated computer invoice issued by Nook Living Pro ERP. No physical signature is required. All security deposits are subject to hostel terms.
             </div>
             <div class="text-center p-3 rounded-xl border border-teal-200 bg-teal-50/40">
               <span class="text-[9px] font-bold uppercase tracking-wider text-teal-800 block">Digitally Verified</span>
